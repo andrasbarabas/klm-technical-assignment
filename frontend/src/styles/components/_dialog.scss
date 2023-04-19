@@ -1,0 +1,7 @@
+.dialog {
+  width: 100%;
+
+  @screen sm {
+    width: 320px;
+  }
+}

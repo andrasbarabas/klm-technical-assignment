@@ -1,0 +1,15 @@
+h1 {
+  font-size: theme('fontSize.2xl') !important;
+
+  @screen sm {
+    font-size: theme('fontSize.3xl') !important;
+  }
+}
+
+h2 {
+  font-size: theme('fontSize.xl') !important;
+}
+
+h3 {
+  font-size: theme('fontSize.lg') !important;
+}

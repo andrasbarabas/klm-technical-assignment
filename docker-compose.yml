@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ./
+      dockerfile: ./api/Dockerfile
+      target: production
+    container_name: klm-api
+    environment:
+      API_PORT: ${API_PORT}
+    healthcheck:
+      interval: 60s
+      retries: 10
+      start_period: 10s
+      test:
+        - CMD-SHELL
+        - curl --fail http://127.0.0.1:${API_PORT:-3000}/healthcheck || exit 1
+      timeout: 5s
+    networks:
+      klm-network: null
+    ports:
+      - "${API_PORT:-3000}:3000"
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile
+      target: production
+    container_name: klm-frontend
+    healthcheck:
+      interval: 60s
+      retries: 10
+      start_period: 10s
+      test:
+        - CMD-SHELL
+        - service nginx status || exit 1
+      timeout: 5s
+    networks:
+      klm-network: null
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    restart: on-failure
+
+  graphql-server:
+    build:
+      context: ./
+      dockerfile: ./graphql-server/Dockerfile
+      target: production
+    container_name: klm-graphql-server
+    environment:
+      API_PORT: ${API_PORT}
+      GRAPHQL_SERVER_PORT: ${GRAPHQL_SERVER_PORT}
+    healthcheck:
+      interval: 60s
+      retries: 10
+      start_period: 10s
+      test:
+        - CMD-SHELL
+        - "curl --fail -H 'apollo-require-preflight: true' http://127.0.0.1:${GRAPHQL_SERVER_PORT:-4000}/graphql?query=%7B__typename%7D"
+      timeout: 5s
+    networks:
+      klm-network: null
+    ports:
+      - "${GRAPHQL_SERVER_PORT:-4000}:4000"
+    restart: on-failure
+
+networks:
+  klm-network:
+    driver: bridge
+    name: klm-network

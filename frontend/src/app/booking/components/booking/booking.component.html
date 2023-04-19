@@ -1,0 +1,248 @@
+<div class="flex flex-col justify-between items-center gap-6 mx-auto w-full md:w-[736px]">
+  <h1 class="uppercase font-bold text-center">Check your Booking Information</h1>
+
+  <div class="flex flex-col sm:flex-row gap-5 items-center justify-between w-full">
+    <div class="flex flex-col sm:flex-row gap-3">
+      <div class="w-full sm:w-auto">
+        Booking Code: <span class="font-bold">{{ bookingData?.bookingCode || 'N/A' }}</span>
+      </div>
+
+      <div class="flex w-full sm:w-auto justify-center sm:items-center text-xs">({{ bookingData?.email || 'N/A' }})</div>
+    </div>
+
+    <button (click)="onShowPassengersDialog()" [color]="'primary'" class="w-full sm:w-auto" mat-raised-button>Passengers</button>
+  </div>
+
+  <div class="flex flex-col gap-2 w-full">
+    <h1>Itinerary Information</h1>
+
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-2">
+        <span>Type:</span>
+
+        <ng-container *ngIf="itineraryInfo && itineraryInfo.type; else itineraryInfoTypeLoading">
+          <span class="font-bold">{{ itineraryInfo.type === itineraryType.ONE_WAY ? 'One Way' : 'Round Trip' }}</span>
+        </ng-container>
+
+        <ng-template #itineraryInfoTypeLoading>
+          <mat-spinner [color]="'primary'" [diameter]="20"></mat-spinner>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2 w-full">
+    <h2>Connections</h2>
+
+    <ng-container *ngIf="itineraryInfo && itineraryInfo.connections; else loadingItineraryInfo">
+      <mat-accordion class="example-headers-align" multi class="w-full">
+        <ng-container *ngFor="let connection of itineraryInfo.connections">
+          <mat-expansion-panel (opened)="onQueryItinerarySegments(connection.id)">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="font-bold">{{ connection.origin.IATACode }}-{{ connection.destination.IATACode }}</mat-panel-title>
+
+              <mat-panel-description>Flight ID: {{ connection.id }}</mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <section class="flex flex-col gap-5">
+              <ng-container *ngIf="segments; else itinerarySegmentsLoading">
+                <ng-container *ngFor="let segment of segments; let last = last">
+                  <div class="flex flex-col gap-5 bg-gray-50 rounded p-4 border border-gray-100">
+                    <h2>Segment ID: {{ segment.id }}</h2>
+
+                    <!-- Departure location -->
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3">
+                        <mat-icon>location_on</mat-icon>
+                        <span class="font-bold">Departure Location</span>
+                      </div>
+
+                      <div class="flex flex-col gap-3">
+                        <div class="flex gap-3 text-sm">
+                          <span>IATA Code:</span>
+                          <span class="font-bold">{{ segment.departFrom.IATACode }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Country Name:</span>
+                          <span class="font-bold"
+                            >{{ segment.departFrom.city.country.name }} ({{ segment.departFrom.city.country.code }})</span
+                          >
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>City Name:</span>
+                          <span class="font-bold">{{ segment.departFrom.city.name }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- !Departure location -->
+
+                    <!-- Arrival location -->
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3">
+                        <mat-icon>flag</mat-icon>
+                        <span class="font-bold">Arrival Location</span>
+                      </div>
+
+                      <div class="flex flex-col gap-3">
+                        <div class="flex gap-3 text-sm">
+                          <span>IATA Code:</span>
+                          <span class="font-bold">{{ segment.arriveOn.IATACode }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Country Name:</span>
+                          <span class="font-bold">{{ segment.arriveOn.city.country.name }} ({{ segment.arriveOn.city.country.code }})</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>City Name:</span>
+                          <span class="font-bold">{{ segment.arriveOn.city.name }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- !Arrival location -->
+
+                    <!-- Flight information -->
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3">
+                        <mat-icon>airplane_ticket</mat-icon>
+                        <span class="font-bold">Flight Information</span>
+                      </div>
+
+                      <div class="flex flex-col gap-3">
+                        <div class="flex gap-3 text-sm">
+                          <span>Flight Number:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.number }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Carrier:</span>
+                          <span class="font-bold"
+                            >{{ segment.marketingFlight.carrier.name }} ({{ segment.marketingFlight.carrier.code }})</span
+                          >
+                        </div>
+
+                        <div class="flex items-center gap-3 text-sm">
+                          <span>Status:</span>
+
+                          <div class="flex items-center gap-1">
+                            <mat-icon
+                              class="{{
+                                segment.marketingFlight.status.code === flightStatus.CONFIRMED ? 'text-green-500' : 'text-red-500'
+                              }}"
+                            >
+                              {{ segment.marketingFlight.status.code === flightStatus.CONFIRMED ? 'done' : 'close' }}
+                            </mat-icon>
+
+                            <span class="font-bold">({{ segment.marketingFlight.status.name }})</span>
+                          </div>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Number of Stops:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.numberOfStops }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Selling Class:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.sellingClass.code }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Flight Duration:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.operatingFlight.duration }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Flight Equipment:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.operatingFlight.equipment.name }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- !Flight information -->
+
+                    <!-- Departure and arrival information  -->
+                    <div class="flex flex-col gap-3">
+                      <div class="flex items-center gap-3">
+                        <mat-icon>flight_land</mat-icon>
+                        <span class="font-bold">Departure and Arrival Information</span>
+                      </div>
+
+                      <div class="flex flex-col gap-3">
+                        <div class="flex gap-3 text-sm">
+                          <span>Scheduled Departure:</span>
+                          <span class="font-bold">{{
+                            segment.marketingFlight.operatingFlight.scheduledDeparture | date : 'MM.dd.yyyy. HH:mm'
+                          }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Local Scheduled Departure:</span>
+                          <span class="font-bold">{{
+                            segment.marketingFlight.operatingFlight.localScheduledDeparture | date : 'MM.dd.yyyy. HH:mm'
+                          }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Scheduled Arrival:</span>
+                          <span class="font-bold">{{
+                            segment.marketingFlight.operatingFlight.scheduledArrival | date : 'MM.dd.yyyy. HH:mm'
+                          }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Local Scheduled Arrival:</span>
+                          <span class="font-bold">{{
+                            segment.marketingFlight.operatingFlight.localScheduledArrival | date : 'MM.dd.yyyy. HH:mm'
+                          }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Cabin:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.operatingFlight.cabin.name }}</span>
+                        </div>
+
+                        <div class="flex gap-3 text-sm">
+                          <span>Arrival Terminal:</span>
+                          <span class="font-bold">{{ segment.marketingFlight.operatingFlight.arrivalTerminal.name }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- !Departure and arrival information -->
+                  </div>
+
+                  <ng-container *ngIf="!last">
+                    <div class="flex justify-center my-5">
+                      <mat-icon class="text-gray-700 scale-[3]">keyboard_double_arrow_down</mat-icon>
+                    </div>
+                  </ng-container>
+                </ng-container>
+              </ng-container>
+
+              <ng-template #itinerarySegmentsLoading>
+                <div class="flex items-center justify-center">
+                  <mat-spinner [color]="'primary'" [diameter]="20"></mat-spinner>
+                </div>
+              </ng-template>
+            </section>
+          </mat-expansion-panel>
+        </ng-container>
+      </mat-accordion>
+    </ng-container>
+
+    <ng-template #loadingItineraryInfo>
+      <div class="flex justify-center">
+        <mat-spinner [color]="'primary'" [diameter]="40"></mat-spinner>
+      </div>
+    </ng-template>
+  </div>
+
+  <div>
+    <button (click)="onLogout()" [color]="'warn'" mat-button>
+      <mat-icon>exit_to_app</mat-icon>
+      <span>Logout</span>
+    </button>
+  </div>
+</div>

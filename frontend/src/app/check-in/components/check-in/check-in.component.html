@@ -1,0 +1,40 @@
+<div class="flex flex-col justify-between items-center gap-6 mx-auto border border-black p-5 w-full sm:w-[320px] max-w-[320px] mt-16">
+  <h1 class="uppercase font-bold text-center">Retrieve your Booking</h1>
+
+  <div class="h-[2px] w-[24px] bg-black"></div>
+
+  <p>You can find your booking by filling out your family name and the booking code in your booking confirmation.</p>
+
+  <form (submit)="onSubmit()" [formGroup]="checkInForm" class="flex flex-col gap-5 w-full">
+    <mat-form-field [appearance]="'outline'" [floatLabel]="'always'" [hideRequiredMarker]="'always'">
+      <mat-label>Booking Code</mat-label>
+
+      <input [formControlName]="'bookingCode'" matInput maxlength="6" type="text" />
+
+      <mat-error *ngIf="checkInForm.controls['bookingCode'].hasError('required')">The field is required!</mat-error>
+      <mat-error *ngIf="checkInForm.controls['bookingCode'].hasError('pattern')">
+        The field must only contain alphabetical letters and [2-9] numbers!
+      </mat-error>
+      <mat-error *ngIf="checkInForm.controls['bookingCode'].hasError('minlength')">
+        The field must be at least 5 characters long!
+      </mat-error>
+      <mat-error *ngIf="checkInForm.controls['bookingCode'].hasError('invalidCredentials')">Invalid Booking Code or Family Name!</mat-error>
+    </mat-form-field>
+
+    <mat-form-field [appearance]="'outline'" [floatLabel]="'always'" [hideRequiredMarker]="'always'">
+      <mat-label>Family Name</mat-label>
+
+      <input [formControlName]="'familyName'" matInput maxlength="30" type="text" />
+
+      <mat-error *ngIf="checkInForm.controls['familyName'].hasError('required')">The field is required!</mat-error>
+      <mat-error *ngIf="checkInForm.controls['familyName'].hasError('minlength')">
+        The field must be at least 2 characters long!
+      </mat-error>
+      <mat-error *ngIf="checkInForm.controls['familyName'].hasError('invalidCredentials')">Invalid Booking Code or Family Name!</mat-error>
+    </mat-form-field>
+
+    <div class="flex justify-center">
+      <button [color]="'warn'" class="w-full sm:w-auto" mat-raised-button type="submit">Retrieve Booking</button>
+    </div>
+  </form>
+</div>

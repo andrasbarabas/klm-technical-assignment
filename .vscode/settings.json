@@ -1,0 +1,19 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.options": {
+    "extensions": [".html", ".js", ".ts"]
+  },
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "scss.lint.unknownAtRules": "ignore",
+  "search.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/tmp": true
+  },
+  "typescript.preferences.importModuleSpecifier": "non-relative"
+}
